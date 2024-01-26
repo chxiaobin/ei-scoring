@@ -25,7 +25,7 @@ public class ThirdPersonSingularScorer {
 				"love", "loves");
 
 		int testScore1 = scorer.getScore("Everyone loves to read comic books as a child.");
-		System.out.println("Should be: 3, Got: " + testScore1);
+		System.out.println("Should be: 2, Got: " + testScore1);
 		
 		int testScore2 = scorer.getScore("Everyone love to read comic books as a child.");
 		System.out.println("Should be: 1, Got: " + testScore2);
@@ -35,7 +35,7 @@ public class ThirdPersonSingularScorer {
 
 	}
 	
-	public ThirdPersonSingularScorer(String target, String targetLemma, String targetLemmaFrom) {
+	public ThirdPersonSingularScorer(String target, String targetLemma, String targetLemmaForm) {
 		this.target = target;
 		this.targetLemma = targetLemma;
 		this.targetLemmaForm = targetLemmaForm;
@@ -48,11 +48,11 @@ public class ThirdPersonSingularScorer {
 	 * @return
 	 */
 	public int getScore(String response) {
-		// score 3: no error. No need to do NLP processing.
-		logger.info("Checking score 3...");
+		// score 2: no error. No need to do NLP processing.
+		logger.info("Checking score 2...");
 		if (target.equals(response.trim())) {
-			logger.info("Response matches target. Give score of 3");
-			return 3;
+			logger.info("Response matches target. Give score of 2");
+			return 2;
 		}
 
 		// Use the corenlp simple API, which is the fastest way to do NLP
@@ -67,16 +67,16 @@ public class ThirdPersonSingularScorer {
 		List<Token> tokens = sent.tokens();
 		List<String> posTags = sent.posTags();
 
-		// score 3: lemma correct but contains spelling error or not in the right form
-		logger.info("Checking score 2...");
-		for (int i = 0; i < lemmas.size(); i++) {
-			String lemma = lemmas.get(i);
-			if (lemma.equals(targetLemma) && lemma.endsWith("s") && 
-					!tokens.get(i).equals(targetLemmaForm)) { 
-				logger.info("Found target lemma at position {}, correct ending, but its form does not equal target form.", i);
-				return 2;
-			}
-		}
+		// score 2: lemma correct but contains spelling error or not in the right form
+//		logger.info("Checking score 2...");
+//		for (int i = 0; i < lemmas.size(); i++) {
+//			String lemma = lemmas.get(i);
+//			if (lemma.equals(targetLemma) && lemma.endsWith("s") && 
+//					!tokens.get(i).equals(targetLemmaForm)) { 
+//				logger.info("Found target lemma at position {}, correct ending, but its form does not equal target form.", i);
+//				return 2;
+//			}
+//		}
 
 		// score 1: use the stem in PP form, but no "be" or "be" in wrong form
 		logger.info("Checking score 1...");
@@ -91,7 +91,7 @@ public class ThirdPersonSingularScorer {
 		// socre 0: not target lemma
 		logger.info("Checking score 0...");
 		if (!lemmas.contains(targetLemma)) {
-			logger.info("Did not find target lemma, returing score 1...");
+			logger.info("Did not find target lemma, returning score 0...");
 			return 0;
 		}
 

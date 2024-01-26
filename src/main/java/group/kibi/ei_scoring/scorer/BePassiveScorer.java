@@ -40,8 +40,7 @@ public class BePassiveScorer {
 
 		int testScore5 = scorer.getScore("Children should stay out late with their friends.");
 		System.out.println("Should be: 0, Got: " + testScore5);
-		
-		
+
 	}
 	
 	public BePassiveScorer(String target, String targetLemma, String targetBeForm) {
