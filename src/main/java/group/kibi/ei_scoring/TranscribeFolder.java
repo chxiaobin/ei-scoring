@@ -78,10 +78,12 @@ public class TranscribeFolder {
 				while(fileIterator.hasNext()) {
 					File file = fileIterator.next();
 					String fileName = file.getName();
+					logger.info("Transcribing file: " + fileName);
 
 					String transcription;
 					try {
 						transcription = whisperTranscriber.transcribe(file);
+						logger.info("\tTranscription: " + transcription);
 						String resultLine = 
 								fileName + "\t" + transcription + "\n";
 						FileUtils.write(resultsFile, resultLine, "utf-8", true);
