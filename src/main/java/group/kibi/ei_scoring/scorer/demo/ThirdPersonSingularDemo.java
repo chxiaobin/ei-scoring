@@ -30,8 +30,10 @@ public class ThirdPersonSingularDemo {
 				new ThirdPersonSingularDemo("Everyone loves to read comic books as a child.",
 				"love", "loves");
 
-		String filePath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/3rd_person/3rd_person_id.tsv";
-	    String outputPath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/3rd_person/scores_3rd_person201.tsv";
+//		String filePath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/3rd_person/3rd_person_id.tsv";
+//	    String outputPath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/3rd_person/scores_3rd_person201.tsv";
+		String filePath = "/home/xiaobin/tmp/ei/3rd_person_id.tsv";
+	    String outputPath = "/home/xiaobin/tmp/ei/scores_3rd_person201.tsv";
 
 	    List<String> sentences = new ArrayList<>();
 	    List<String> results = new ArrayList<>();
@@ -108,16 +110,28 @@ public class ThirdPersonSingularDemo {
 //			}
 //		}
 
+		
 		// Please update the comments below:
 		// score 1: used the target lemma, but the token not in the target form
 		logger.info("Checking score 1...");
 		for (int i = 0; i < lemmas.size(); i++) {
 			String lemma = lemmas.get(i);
-			if (lemma.equals(targetLemma) && !tokens.get(i).equals(targetLemmaForm)) { 
+			if (tokens.get(i).equals(targetLemmaForm) || posTags.get(i).startsWith("VBZ")
+					) { //account for alternative
 				logger.info("Found target lemma at position {}, but its form does not equal target form.", i);
 				return 1;
 			}
 		}
+
+//		logger.info("Checking score 0...");
+//		for (int i = 0; i < lemmas.size(); i++) {
+//			String lemma = lemmas.get(i);
+//			if (lemma.equals(targetLemma) && !tokens.get(i).equals(targetLemmaForm)) { 
+//			if (lemma.equals(targetLemma) || tokens.get(i).equals(targetLemmaForm) || lemma.equals("likes")) { //account for alternative
+//				logger.info("Found target lemma at position {}, but its form does not equal target form.", i);
+//				return 1;
+//			}
+//		}
 
 		// socre 0: not target lemma
 		logger.info("Checking score 0...");

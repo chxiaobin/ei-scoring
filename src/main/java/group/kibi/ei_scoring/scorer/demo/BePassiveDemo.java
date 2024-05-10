@@ -31,9 +31,12 @@ public class BePassiveDemo {
 
 	    BePassiveDemo scorer = new BePassiveDemo("Children should not be allowed to stay out late with their friends", "allow", "be");
 
-	    String filePath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/be_passive/be_passive210_id.tsv";
-	    String outputPath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/be_passive/scores_be_passive210.tsv";
+//	    String filePath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/be_passive/be_passive210_id.tsv";
+//	    String outputPath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/be_passive/scores_be_passive210.tsv";
+	    String filePath = "/home/xiaobin/tmp/ei/be_passive210_id.tsv";
+	    String outputPath = "/home/xiaobin/tmp/ei/scores_be_passive210.tsv";
 
+//	    Thread.currentThread().getContextClassLoader().getResource(outputPath)
 	    List<String> sentences = new ArrayList<>();
 	    List<String> results = new ArrayList<>();
 
@@ -119,7 +122,7 @@ public class BePassiveDemo {
 				// of the more complex situations.
 				if (i <= lemmas.size() - 1) { // avoid out of range
 					int nextIdx = i + 1;
-					if (posTags.get(nextIdx).equals("VBN")) {
+					if (posTags.get(nextIdx).equals("VBN") || posTags.get(nextIdx + 1).equals("VBN")) { //account for situation like 'is not allowed'
 						logger.info("Next token is also VBN, returning score 1.");
 						return 1;
 					}
@@ -130,7 +133,7 @@ public class BePassiveDemo {
 		
 		
 		// score 0: use the stem in PP form, but no "be" or "be" in wrong form
-		logger.info("Checking score 1...");
+		logger.info("Checking score 0...");
 		for (int i = 0; i < lemmas.size(); i++) {
 			String lemma = lemmas.get(i);
 			if (lemma.equals(targetLemma) && "VBN".equals(posTags.get(i))) {
