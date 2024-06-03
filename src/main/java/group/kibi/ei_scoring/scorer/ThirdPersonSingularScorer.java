@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.simple.Token;
 
+/**
+ * This class demonstrates a scorer with a different scoring scale.
+ */
 public class ThirdPersonSingularScorer {
 
 	//the target corrected prompt
@@ -25,13 +28,13 @@ public class ThirdPersonSingularScorer {
 				"love", "loves");
 
 		int testScore1 = scorer.getScore("Everyone loves to read comic books as a child.");
-		System.out.println("Should be: 2, Got: " + testScore1);
+		scorer.logger.info("Should be: 2, Got: " + testScore1);
 		
 		int testScore2 = scorer.getScore("Everyone love to read comic books as a child.");
-		System.out.println("Should be: 1, Got: " + testScore2);
+		scorer.logger.info("Should be: 1, Got: " + testScore2);
 
 		int testScore3 = scorer.getScore("Everyone likes to read comic books.");
-		System.out.println("Should be: 0, Got: " + testScore3);
+		scorer.logger.info("Should be: 0, Got: " + testScore3);
 
 	}
 	
@@ -66,17 +69,6 @@ public class ThirdPersonSingularScorer {
 		List<String> lemmas = sent.lemmas();
 		List<Token> tokens = sent.tokens();
 		List<String> posTags = sent.posTags();
-
-		// score 2: lemma correct but contains spelling error or not in the right form
-//		logger.info("Checking score 2...");
-//		for (int i = 0; i < lemmas.size(); i++) {
-//			String lemma = lemmas.get(i);
-//			if (lemma.equals(targetLemma) && lemma.endsWith("s") && 
-//					!tokens.get(i).equals(targetLemmaForm)) { 
-//				logger.info("Found target lemma at position {}, correct ending, but its form does not equal target form.", i);
-//				return 2;
-//			}
-//		}
 
 		// score 1: use the stem in PP form, but no "be" or "be" in wrong form
 		logger.info("Checking score 1...");

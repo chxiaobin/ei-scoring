@@ -12,7 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Iterate over a folder and transcribe all .wav audio files. 
+ * Iterate over a folder and transcribe all .wav audio files with OpenAI's
+ * Whisper service. It requires an API key from OpenAI.
  */
 public class TranscribeFolder {
 	static String transcription;
@@ -22,7 +23,7 @@ public class TranscribeFolder {
 	public static void main(String[] args) throws IOException {
 		//Check if user pass in the folder to be transcribed.
 		if(args.length != 3) {
-			System.out.println("Usage: TranscribeFolder API_KEY /path/to/audio/folder /results/folder");
+			logger.info("Usage: TranscribeFolder API_KEY /path/to/audio/folder /results/folder");
 			System.exit(1);
 		}
 		
@@ -34,16 +35,16 @@ public class TranscribeFolder {
 		//Check if the audio folder exists.
 		File audioFolder = new File(audioFolderPath);
 		if(!audioFolder.exists()) {
-			System.out.println(String.format("Audio folder '%s' does not exist.", audioFolderPath));
+			logger.error(String.format("Audio folder '%s' does not exist.", audioFolderPath));
 			System.exit(1);
 		}
 
 		//check if results folder exists
 		File resultsFolder = new File(resultsFolderPath);
 		if(!resultsFolder.exists()) {
-			System.out.println(String.format("Results folder '%s' does not exist. Creating the folder...", audioFolderPath));
+			logger.info(String.format("Results folder '%s' does not exist. Creating the folder...", audioFolderPath));
 			if(resultsFolder.mkdirs()) {
-				System.out.println("Created.");
+				logger.info("Created.");
 			} else {
 				System.exit(1);
 			}
@@ -105,7 +106,6 @@ public class TranscribeFolder {
 			
 			public void uncaughtException(Thread theThread, Throwable cause) {
 				//restart thread when error
-//				createWhisperThread().start();
 				logger.error("An unknown exception occurred, restarting the transcription thread...");
 				logger.error(cause.getMessage(), cause);
 				theThread.start(); 

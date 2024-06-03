@@ -8,6 +8,11 @@ import org.slf4j.LoggerFactory;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.simple.Token;
 
+
+/**
+ * This scorer demonstrates how rules for a different scoring scale can be
+ * written. Here a scale of 5 scores (0-4) are used.
+ */
 public class BePassiveScorer {
 
 	private String target; 
@@ -27,19 +32,19 @@ public class BePassiveScorer {
 				"allow", "be");
 
 		int testScore1 = scorer.getScore("Children should not be allowed to stay out late with their friends.");
-		System.out.println("Should be: 4, Got: " + testScore1);
+		scorer.logger.info("Should be: 4, Got: " + testScore1);
 		
 		int testScore2 = scorer.getScore("Children should not be agreed to stay out late with their friends.");
-		System.out.println("Should be: 3, Got: " + testScore2);
+		scorer.logger.info("Should be: 3, Got: " + testScore2);
 
 		int testScore3 = scorer.getScore("Children should not allowed to stay out late with their friends.");
-		System.out.println("Should be: 2, Got: " + testScore3);
+		scorer.logger.info("Should be: 2, Got: " + testScore3);
 
 		int testScore4 = scorer.getScore("Children should not allow to stay out late with their friends.");
-		System.out.println("Should be: 1, Got: " + testScore4);
+		scorer.logger.info("Should be: 1, Got: " + testScore4);
 
 		int testScore5 = scorer.getScore("Children should stay out late with their friends.");
-		System.out.println("Should be: 0, Got: " + testScore5);
+		scorer.logger.info("Should be: 0, Got: " + testScore5);
 
 	}
 	

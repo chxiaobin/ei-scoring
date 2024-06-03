@@ -1,69 +1,88 @@
 package group.kibi.ei_scoring.scorer.demo;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.simple.Token;
 
+/**
+ * This is for demonstrating scoring '3rd person singular -s' EI responses.
+ */
 public class ThirdPersonSingularDemo {
 
-	//the target corrected prompt
+	//The target sentence, which is the sentence the test taker hears.
 	private String target; 
 
 	//the targeted verb
 	private String targetLemma; 
+	
+	//the corrected form of the targeted verb
 	private String targetLemmaForm;
 
 	Logger logger = LoggerFactory.getLogger(getClass());
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws URISyntaxException, IOException {
+		//Initiate the scorer with the target sentence, the lemma of the target
+		//verb, and the correct form of the targeted verb.
 		ThirdPersonSingularDemo scorer = 
 				new ThirdPersonSingularDemo("Everyone loves to read comic books as a child.",
 				"love", "loves");
 
-//		String filePath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/3rd_person/3rd_person_id.tsv";
-//	    String outputPath = "/Users/Xiaoyi/Desktop/sla/automated_scoring/3rd_person/scores_3rd_person201.tsv";
-		String filePath = "/home/xiaobin/tmp/ei/3rd_person_id.tsv";
-	    String outputPath = "/home/xiaobin/tmp/ei/scores_3rd_person201.tsv";
+	    //test completed, now apply the scorer on a lot of responses
+	    scorer.logger.info("Applying the scorer on data from Kim & Godfroid (2023)...");
 
-	    List<String> sentences = new ArrayList<>();
-	    List<String> results = new ArrayList<>();
+	    //load transcribed response, which is stored in the
+	    //src/main/resources/data folder of this code repository
+	    URL resourceFolderUrl = Thread.currentThread().getContextClassLoader()
+	    		.getResource("data");
+	    File resourceFolder = new File(resourceFolderUrl.toURI());
+	    
+	    //file storing the transcribed responses
+	    File responseFile =new File(resourceFolder, "3rd_person_id.tsv");
+	    
+	    //file where the scores are to be stored
+	    File scoreFile =new File(resourceFolder, "scores_3rd_person_id.tsv");
+	    
+	    //read the responses from the response file
+	    List<String> responseLines = FileUtils.readLines(responseFile, "UTF-8");
+	    responseLines.remove(0);//remove heading line
+	    
+	    //create a file for writing the scoring results
+	    List<String> resultLines = new ArrayList<>();
+	    resultLines.add("id\ttranscription\tscore"); //add heading line
 
-	    int columnIndex = 1;
+	    //iterate over the lines in the response file, getting the response from
+	    //the second column in the TSV file and score them
+		for (String responseLine : responseLines) {
+			//Get the 2nd column (column index 1), which is the transcription of
+			//the response
+			String[] columns = responseLine.split("\t");
+			if (columns.length > 1) {
+				String response = columns[1];
+				scorer.logger.info("Scoring response: " + response);
+				int score = scorer.getScore(response);
+				scorer.logger.info("\tScore: " + score);
 
-	    try (BufferedReader br = new BufferedReader(new FileReader(filePath));
-	         BufferedWriter bw = new BufferedWriter(new FileWriter(outputPath))) {
-	        String line;
-
-	        while ((line = br.readLine()) != null) {
-	            String[] columns = line.split("\t");
-	            if (columns.length > columnIndex) {
-	                sentences.add(columns[columnIndex]);
-	                int testScore = scorer.getScore(columns[columnIndex]);
-	                // Assuming you want to keep the original data and add a new column
-	                String resultLine = line + "\t" + testScore;
-	                results.add(resultLine);
-	            }
-	        }
-
-	        // Writing results to the new file
-	        for (String result : results) {
-	            bw.write(result);
-	            bw.newLine();
-	        }
-
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    }
+				// Assuming you want to keep the original data and add a new column
+				String resultLine = responseLine + "\t" + score;
+				resultLines.add(resultLine);
+			}
+		}
+		
+		//pay attention to the output to see where the results file is stored
+		scorer.logger.info("Writing results to file: " + scoreFile);
+		FileUtils.writeLines(scoreFile, resultLines);
+		scorer.logger.info("Results written successfully."); 
+	    
 	}
 
 	
@@ -74,23 +93,24 @@ public class ThirdPersonSingularDemo {
 	}
 
 	/**
-	 * For scoring a response to a prompt targeting third-person singular -s
+	 * The scoring algorithm is implemented here. The function takes a response
+	 * and return a score for that response.
 	 * 
 	 * @param response  the student's response to the prompt
 	 * @return
 	 */
 	public int getScore(String response) {
-		// score 2: no error. No need to do NLP processing.
-		logger.info("Checking score 1...");
+		// score 1: no error. No need to do NLP processing.
+		logger.info("\tChecking exact match...");
 		if (target.equals(response.trim())) {
-			logger.info("Response matches target. Give score of 1");
+			logger.info("\tResponse matches target. Give score 1.");
 			return 1;
 		}
 
-		// Use the corenlp simple API, which is the fastest way to do NLP
+		// Use the CoreNLP simple API, which is the fastest way to do NLP
 		// processing, but without a lot of customization. It meets our scoring
 		// task requirements though.
-		logger.info("Processing response with Corenlp...");
+		logger.info("\tProcessing response with Corenlp...");
 		Sentence sent = new Sentence(response);
 
 		// get all the tokens and lemmas, POS tags. Corenlp use the Penntreebank
@@ -99,45 +119,15 @@ public class ThirdPersonSingularDemo {
 		List<Token> tokens = sent.tokens();
 		List<String> posTags = sent.posTags();
 
-		// score 2: lemma correct but contains spelling error or not in the right form
-//		logger.info("Checking score 1...");
-//		for (int i = 0; i < lemmas.size(); i++) {
-//			String lemma = lemmas.get(i);
-//			if (lemma.equals(targetLemma) && lemma.endsWith("s") && 
-//					!tokens.get(i).equals(targetLemmaForm)) { 
-//				logger.info("Found target lemma at position {}, correct ending, but its form does not equal target form.", i);
-//				return 1;
-//			}
-//		}
-
-		
-		// Please update the comments below:
-		// score 1: used the target lemma, but the token not in the target form
-		logger.info("Checking score 1...");
+		// score 1: used -s form, either using the target verb or other verbs in
+		// the 3rd person singular form
+		logger.info("\tChecking verb used in 3rd person singular form...");
 		for (int i = 0; i < lemmas.size(); i++) {
-			String lemma = lemmas.get(i);
-			if (tokens.get(i).equals(targetLemmaForm) || posTags.get(i).startsWith("VBZ")
-					) { //account for alternative
-				logger.info("Found target lemma at position {}, but its form does not equal target form.", i);
+			if (tokens.get(i).equals(targetLemmaForm) || posTags.get(i).startsWith("VBZ")) {
+				logger.info("\tFound target lemma in correct form or main verb in 3rd person "
+						+ "singular at position {}", i);
 				return 1;
 			}
-		}
-
-//		logger.info("Checking score 0...");
-//		for (int i = 0; i < lemmas.size(); i++) {
-//			String lemma = lemmas.get(i);
-//			if (lemma.equals(targetLemma) && !tokens.get(i).equals(targetLemmaForm)) { 
-//			if (lemma.equals(targetLemma) || tokens.get(i).equals(targetLemmaForm) || lemma.equals("likes")) { //account for alternative
-//				logger.info("Found target lemma at position {}, but its form does not equal target form.", i);
-//				return 1;
-//			}
-//		}
-
-		// socre 0: not target lemma
-		logger.info("Checking score 0...");
-		if (!lemmas.contains(targetLemma)) {
-			logger.info("Did not find target lemma, returning score 0...");
-			return 0;
 		}
 
 		// all other possibilities
