@@ -56,7 +56,7 @@ public class ThirdPersonSingularDemo {
 	    List<String> responseLines = FileUtils.readLines(responseFile, "UTF-8");
 	    responseLines.remove(0);//remove heading line
 	    
-	    //create a file for writing the scoring results
+	    //result lines, which will be written to the result file
 	    List<String> resultLines = new ArrayList<>();
 	    resultLines.add("id\ttranscription\tscore"); //add heading line
 
